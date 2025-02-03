@@ -3,7 +3,7 @@ name: Build Phira
 on:
   push:
     branches:
-      - main
+      - judgement
   workflow_dispatch:
 
 env:
