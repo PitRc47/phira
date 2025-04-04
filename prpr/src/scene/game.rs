@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-crate::tl_file!("game");
+prpr_l10n::tl_file!("game");
 
 use super::{
     draw_background,
@@ -372,6 +372,7 @@ impl GameScene {
             }
         }
         ui.alpha(res.alpha, |ui| {
+            ui.text("MAGIC BUGFIX TEXT").color(Color::new(0., 0., 0., 0.)).draw();
             if tm.now() as f32 - self.pause_first_time <= PAUSE_CLICK_INTERVAL {
                 ui.fill_circle(pause_center.x, pause_center.y, 0.05, Color::new(1., 1., 1., 0.5));
             }
@@ -433,6 +434,8 @@ impl GameScene {
                             .draw_using(&PGR_FONT);
                     });
             }
+            // magic to make score visible, refer to phira/src/rate.rs#L219
+            ui.text("").draw_using(&PGR_FONT);
             let lf = -1. + margin;
             let bt = -top - eps * 2.8 + (1. - p) * 0.4;
             let ct = ui.text(&res.info.name).measure().center();
@@ -514,6 +517,9 @@ impl GameScene {
                     clicked = None;
                 }
                 let mut pos = self.music.position();
+                if self.mode == GameMode::Exercise {
+                    pos = tm.now() as f32;
+                }
                 if clicked.map_or(false, |it| it != -1) && (tm.speed - res.config.speed as f64).abs() > 0.01 {
                     debug!("recreating music");
                     self.music = res.audio.create_music(
@@ -533,7 +539,7 @@ impl GameScene {
                         reset!(self, res, tm);
                     }
                     Some(1) => {
-                        if self.mode == GameMode::Exercise && tm.now() > self.exercise_range.end as f64 {
+                        if self.mode == GameMode::Exercise && (tm.now() > self.exercise_range.end as f64 || tm.now() < self.exercise_range.start as f64) {
                             tm.seek_to(self.exercise_range.start as f64);
                             self.music.seek_to(self.exercise_range.start)?;
                             pos = self.exercise_range.start;
